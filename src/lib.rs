@@ -1,6 +1,8 @@
 // This file is part of Rubik.
 // Copyright Peter Beard, licensed under the GPLv3. See LICENSE for details.
-mod cube;
+//! A library for working with Rubik's cubes.
+
+pub mod cube;
 
 #[cfg(test)]
 mod tests {
