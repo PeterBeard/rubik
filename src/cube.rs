@@ -19,6 +19,77 @@ enum Corner {
     DRB,
 }
 
+/// Get the corner cubie face corresponding to a certain orientation index
+fn get_corner_face(corner: Corner, orient: u8) -> Face {
+    use self::Corner::*;
+    match corner {
+        UFL => {
+            match orient {
+                0 => Face::U,
+                1 => Face::F,
+                2 => Face::L,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        URF => {
+            match orient {
+                0 => Face::U,
+                1 => Face::R,
+                2 => Face::F,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        UBR => {
+            match orient {
+                0 => Face::U,
+                1 => Face::B,
+                2 => Face::R,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        }
+        ULB => {
+            match orient {
+                0 => Face::U,
+                1 => Face::L,
+                2 => Face::B,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        DBL => {
+            match orient {
+                0 => Face::D,
+                1 => Face::B,
+                2 => Face::L,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        DLF => {
+            match orient {
+                0 => Face::D,
+                1 => Face::L,
+                2 => Face::F,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        DFR => {
+            match orient {
+                0 => Face::D,
+                1 => Face::F,
+                2 => Face::R,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+        DRB => {
+            match orient {
+                0 => Face::D,
+                1 => Face::R,
+                2 => Face::B,
+				_ => panic!("Invalid corner orientation: {}", orient)
+            }
+        },
+    }
+}
+
 /// An edge of a Rubik's cube (there are 12)
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
 enum Edge {
@@ -34,6 +105,97 @@ enum Edge {
     DR,
     DF,
     DL,
+}
+
+/// Get the edge cubie face corresponding to a certain orientation index
+fn get_edge_face(edge: Edge, orient: u8) -> Face {
+    use self::Edge::*;
+    match edge {
+        UB => {
+            match orient {
+                0 => Face::U,
+                1 => Face::B,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        UR => {
+            match orient {
+                0 => Face::U,
+                1 => Face::R,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        UF => {
+            match orient {
+                0 => Face::U,
+                1 => Face::F,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        UL => {
+            match orient {
+                0 => Face::U,
+                1 => Face::L,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        LB => {
+            match orient {
+                0 => Face::L,
+                1 => Face::B,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        RB => {
+            match orient {
+                0 => Face::R,
+                1 => Face::B,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        RF => {
+            match orient {
+                0 => Face::R,
+                1 => Face::F,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        LF => {
+            match orient {
+                0 => Face::L,
+                1 => Face::F,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        DB => {
+            match orient {
+                0 => Face::D,
+                1 => Face::B,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        DR => {
+            match orient {
+                0 => Face::D,
+                1 => Face::R,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        DF => {
+            match orient {
+                0 => Face::D,
+                1 => Face::F,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+        DL => {
+            match orient {
+                0 => Face::D,
+                1 => Face::L,
+                _ => panic!("Invalid edge orientation: {}", orient)
+            }
+        },
+    }
 }
 
 /// There are six possible Rubik's cube moves: Front, Right, Up, Back, Left, and Down.
@@ -61,6 +223,34 @@ impl From<char> for Move {
             'L' => Move::L,
             'D' => Move::D,
             _ => panic!("Invalid move: {}", ch),
+        }
+    }
+}
+
+/// A face of a cubie (corresponds to a single color sticker on a real cube)
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+pub enum Face {
+    F,
+    R,
+    U,
+    B,
+    L,
+    D,
+}
+
+/// Create a Face from a char. See
+/// [http://rubiks.wikia.com/wiki/Notation](http://rubiks.wikia.com/wiki/Notation) 
+/// for notation.
+impl From<char> for Face {
+    fn from(ch: char) -> Face {
+        match ch {
+            'F' => Face::F,
+            'R' => Face::R,
+            'U' => Face::U,
+            'B' => Face::B,
+            'L' => Face::L,
+            'D' => Face::D,
+            _ => panic!("Invalid face name: {}", ch),
         }
     }
 }
@@ -139,6 +329,11 @@ impl CornerPermutation {
         CornerPermutation::default()
     }
 
+    /// Get a the cubie located in a particular cubicle
+    pub fn get(&self, cubicle: Corner) -> Corner {
+        *self.map.get(&cubicle).unwrap()
+    }
+
     /// Apply a move and determine which cubies end up where
     pub fn permute(&mut self, m: Move) {
         use self::Move;
@@ -214,6 +409,11 @@ impl EdgePermutation {
     /// Create a new solved permutation
     pub fn new() -> EdgePermutation {
         EdgePermutation::default()
+    }
+
+    /// Get a the cubie located in a particular cubicle
+    pub fn get(&self, cubicle: Edge) -> Edge {
+        *self.map.get(&cubicle).unwrap()
     }
 
     /// Apply a move and determine which cubies end up where
@@ -325,6 +525,180 @@ impl Cube {
         self.tau.permute(m);
 
         // Compute X and Y
+        let new_x = match m {
+            Move::F => {
+                X(
+                    (self.x.5 + 1) % 3,
+                    (self.x.0 + 2) % 3,
+                    self.x.2,
+                    self.x.3,
+                    self.x.4,
+                    (self.x.6 + 2) % 3,
+                    (self.x.1 + 1) % 3,
+                    self.x.7
+                )
+            },
+            Move::R => {
+                X(
+                    self.x.0,
+                    (self.x.6 + 1) % 3,
+                    (self.x.1 + 2) % 3,
+                    self.x.3,
+                    self.x.4,
+                    self.x.5,
+                    (self.x.7 + 2) % 3,
+                    (self.x.2 + 1) % 3
+                )
+            },
+            Move::U => {
+                X(
+                    self.x.1,
+                    self.x.2,
+                    self.x.3,
+                    self.x.0,
+                    self.x.4,
+                    self.x.5,
+                    self.x.6,
+                    self.x.7
+                )
+            },
+            Move::B => {
+                X(
+                    self.x.0,
+                    self.x.1,
+                    (self.x.7 + 1) % 3,
+                    (self.x.2 + 2) % 3,
+                    (self.x.3 + 1) % 3,
+                    self.x.5,
+                    self.x.6,
+                    (self.x.4 + 2) % 3
+                )
+            },
+            Move::L => {
+                X(
+                    (self.x.4 + 2) % 3,
+                    self.x.1,
+                    self.x.2,
+                    (self.x.4 + 1) % 3,
+                    (self.x.5 + 2) % 3,
+                    (self.x.0 + 1) % 3,
+                    self.x.6,
+                    self.x.7
+                )
+            },
+            Move::D => {
+                X(
+                    self.x.0,
+                    self.x.1,
+                    self.x.2,
+                    self.x.3,
+                    self.x.7,
+                    self.x.4,
+                    self.x.5,
+                    self.x.6
+                )
+            },
+        };
+        let new_y = match m {
+            Move::F => {
+                Y(
+                    self.y.0,
+                    self.y.1,
+                    (self.y.7 + 1) % 2,
+                    self.y.3,
+                    self.y.4,
+                    self.y.5,
+                    (self.y.2 + 1) % 2,
+                    (self.y.10 + 1) % 2,
+                    self.y.8,
+                    self.y.9,
+                    (self.y.6 + 1) % 2,
+                    self.y.11
+                )
+            },
+            Move::R => {
+                Y(
+                    self.y.0,
+                    self.y.6,
+                    self.y.2,
+                    self.y.3,
+                    self.y.4,
+                    self.y.1,
+                    self.y.9,
+                    self.y.7,
+                    self.y.8,
+                    self.y.6,
+                    self.y.10,
+                    self.y.11
+                )
+            },
+            Move::U => {
+                Y(
+                    self.y.3,
+                    self.y.0,
+                    self.y.1,
+                    self.y.2,
+                    self.y.4,
+                    self.y.5,
+                    self.y.6,
+                    self.y.7,
+                    self.y.8,
+                    self.y.9,
+                    self.y.10,
+                    self.y.11
+                )
+            },
+            Move::B => {
+                Y(
+                    (self.y.5 + 1) % 2,
+                    self.y.1,
+                    self.y.2,
+                    self.y.3,
+                    (self.y.0 + 1) % 2,
+                    (self.y.8 + 1) % 2,
+                    self.y.6,
+                    self.y.7,
+                    (self.y.4 + 1) % 2,
+                    self.y.9,
+                    self.y.10,
+                    self.y.11
+                )
+            },
+            Move::L => {
+                Y(
+                    self.y.0,
+                    self.y.1,
+                    self.y.2,
+                    self.y.4,
+                    self.y.11,
+                    self.y.5,
+                    self.y.6,
+                    self.y.3,
+                    self.y.8,
+                    self.y.9,
+                    self.y.10,
+                    self.y.7
+                )
+            },
+            Move::D => {
+                Y(
+                    self.y.0,
+                    self.y.1,
+                    self.y.2,
+                    self.y.3,
+                    self.y.4,
+                    self.y.5,
+                    self.y.6,
+                    self.y.7,
+                    self.y.9,
+                    self.y.10,
+                    self.y.11,
+                    self.y.8
+                )
+            },
+        };
+        self.x = new_x;
+        self.y = new_y;
     }
 
     /// Determine whether the cube is in the solved state
@@ -333,5 +707,117 @@ impl Cube {
         self.tau == EdgePermutation::default() &&
         self.x == X::default() &&
         self.y == Y::default()
+    }
+
+    /// Get the cubie faces visible on one face of the cube. Faces are stored out
+    /// in the array such that the top row of the face is in the first three
+    /// elements, the next row is stored in the next three elements, and the
+    /// bottom row is stored in the last three elements.
+    pub fn get_face(&self, face: Face) -> [Face; 9] {
+        // Get the cubie in each cubicle of this face
+        // The center is always the same
+        let center = face;
+
+        // Find the corners located in this face clockwise from top left
+        use self::Corner::*;
+        let corners = match face {
+            Face::F => [UFL, URF, DFR, DLF],
+            Face::R => [URF, UBR, DRB, DBL],
+            Face::U => [ULB, UBR, URF, UFL],
+            Face::B => [UBR, ULB, DBL, DRB],
+            Face::L => [ULB, UFL, DLF, DBL],
+            Face::D => [DBL, DRB, DLF, DFR],
+        };
+
+        // Find the edges in the face clockwise from the top
+        use self::Edge::*;
+        let edges = match face {
+            Face::F => [UF, RF, DF, LF],
+            Face::R => [UR, RB, DR, RF],
+            Face::U => [UB, UR, UF, UL],
+            Face::B => [UB, LB, DB, RB],
+            Face::L => [UL, LF, DL, LB],
+            Face::D => [DB, DL, DF, DR],
+        };
+
+        // Get the corner and edge cubies in each cubicle of interest
+        let corner_indices = [
+            self.sigma.get(corners[0]),
+            self.sigma.get(corners[1]),
+            self.sigma.get(corners[2]),
+            self.sigma.get(corners[3])
+        ];
+        let edge_indices = [
+            self.tau.get(edges[0]),
+            self.tau.get(edges[1]),
+            self.tau.get(edges[2]),
+            self.tau.get(edges[3])
+        ];
+
+        // Now get the orientations for the cubies we care about
+        let corner_orientations = [
+            self.get_corner_orientation(corners[0]),
+            self.get_corner_orientation(corners[1]),
+            self.get_corner_orientation(corners[2]),
+            self.get_corner_orientation(corners[3])
+        ];
+        let edge_orientations = [
+            self.get_edge_orientation(edges[0]),
+            self.get_edge_orientation(edges[1]),
+            self.get_edge_orientation(edges[2]),
+            self.get_edge_orientation(edges[3])
+        ];
+
+        let mut corner_faces = [Face::U; 4];
+        let mut edge_faces = [Face::U; 4];
+
+        for i in 0..4 {
+            corner_faces[i] = get_corner_face(corner_indices[i],corner_orientations[i]);
+            edge_faces[i] = get_edge_face(edge_indices[i],edge_orientations[i]);
+        }
+
+        println!("{:?}", corner_indices);
+        println!("{:?}", corner_orientations);
+        println!("{:?}", edge_indices);
+        println!("{:?}", edge_orientations);
+
+        [corner_faces[0], edge_faces[0], corner_faces[1],
+        edge_faces[3], center, edge_faces[1],
+        corner_faces[3], edge_faces[2], corner_faces[2]]
+
+    }
+
+    /// Get the orientation of a corner cubicle
+    fn get_corner_orientation(&self, c: Corner) -> u8 {
+        use self::Corner::*;
+        match c {
+            UFL => self.x.0,
+            URF => self.x.1,
+            UBR => self.x.2,
+            ULB => self.x.3,
+            DBL => self.x.4,
+            DLF => self.x.5,
+            DFR => self.x.6,
+            DRB => self.x.7,
+        }
+    }
+
+    /// Get the orientation of an edge cubicle
+    fn get_edge_orientation(&self, e: Edge) -> u8 {
+        use self::Edge::*;
+        match e {
+            UB => self.y.0,
+            UR => self.y.1,
+            UF => self.y.2,
+            UL => self.y.3,
+            LB => self.y.4,
+            RB => self.y.5,
+            RF => self.y.6,
+            LF => self.y.7,
+            DB => self.y.8,
+            DR => self.y.9,
+            DF => self.y.10,
+            DL => self.y.11,
+        }
     }
 }
