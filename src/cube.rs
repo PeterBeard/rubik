@@ -488,6 +488,20 @@ impl Cube {
     ///
     /// # Arguments
     /// moves: A move or moves to apply to the cube, e.g. FRUU'R'F'
+    ///
+    /// # Example
+    /// ```
+    /// use rubik::cube::*;
+    ///
+    /// let mut cube = Cube::new();
+    /// // Scramble the cube a little
+    /// cube.apply_moves("FUR");
+    /// assert!(!cube.is_solved());
+    ///
+    /// // Undo the moves
+    /// cube.apply_moves("R'U'F'");
+    /// assert!(cube.is_solved());
+    /// ```
     pub fn apply_moves(&mut self, moves: &str) {
         use self::Move;
         let mut movelist: Vec<Move> = Vec::new();
@@ -517,6 +531,20 @@ impl Cube {
     }
 
     /// Apply a single move to the cube.
+    ///
+    /// # Example
+    /// ```
+    /// use rubik::cube::*;
+    ///
+    /// let mut cube = Cube::new();
+    /// cube.apply_move(Move::F);
+    /// assert!(!cube.is_solved());
+    ///
+    /// cube.apply_move(Move::F);
+    /// cube.apply_move(Move::F);
+    /// cube.apply_move(Move::F);
+    /// assert!(cube.is_solved());
+    /// ```
     pub fn apply_move(&mut self, m: Move) {
         use self::Move;
         println!("Moving {:?}", m);
@@ -713,6 +741,15 @@ impl Cube {
     /// in the array such that the top row of the face is in the first three
     /// elements, the next row is stored in the next three elements, and the
     /// bottom row is stored in the last three elements.
+    ///
+    /// # Example
+    /// ```
+    /// use rubik::cube::*;
+    ///
+    /// let mut cube = Cube::new();
+    /// // On a solved cube, every cubie face on the up face should also be an up face
+    /// assert_eq!(cube.get_face(Face::U), [Face::U; 9]);
+    /// ```
     pub fn get_face(&self, face: Face) -> [Face; 9] {
         // Get the cubie in each cubicle of this face
         // The center is always the same
@@ -819,5 +856,14 @@ impl Cube {
             DF => self.y.10,
             DL => self.y.11,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_default_solved() {
+        assert!(Cube::new().is_solved());
     }
 }

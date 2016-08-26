@@ -3,10 +3,3 @@
 //! A library for working with Rubik's cubes.
 
 pub mod cube;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}
