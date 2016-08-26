@@ -20,6 +20,9 @@ enum Corner {
 }
 
 /// Get the corner cubie face corresponding to a certain orientation index
+///
+/// # Panics
+/// This function panics if it encounters an invalid orientation
 fn get_corner_face(corner: Corner, orient: u8) -> Face {
     use self::Corner::*;
     match corner {
@@ -108,6 +111,9 @@ enum Edge {
 }
 
 /// Get the edge cubie face corresponding to a certain orientation index
+///
+/// # Panics
+/// This function panics if it encounters an invalid orientation
 fn get_edge_face(edge: Edge, orient: u8) -> Face {
     use self::Edge::*;
     match edge {
@@ -213,6 +219,9 @@ pub enum Move {
 /// Create a Move from a char. See
 /// [http://rubiks.wikia.com/wiki/Notation](http://rubiks.wikia.com/wiki/Notation) 
 /// for notation.
+///
+/// # Panics
+/// This function will panic if the input char isn't a valid move, i.e. not one of FRUBLD.
 impl From<char> for Move {
     fn from(ch: char) -> Move {
         match ch {
@@ -241,6 +250,9 @@ pub enum Face {
 /// Create a Face from a char. See
 /// [http://rubiks.wikia.com/wiki/Notation](http://rubiks.wikia.com/wiki/Notation) 
 /// for notation.
+///
+/// # Panics
+/// This function will panic if the input char isn't a valid face, i.e. not one of FRUBLD.
 impl From<char> for Face {
     fn from(ch: char) -> Face {
         match ch {
@@ -484,10 +496,13 @@ impl Cube {
         }
     }
 
-    /// Apply a string of moves to a cube
+    /// Apply a string of moves to a cube. Notation here: [http://rubiks.wikia.com/wiki/Notation](http://rubiks.wikia.com/wiki/Notation) 
     ///
     /// # Arguments
     /// moves: A move or moves to apply to the cube, e.g. FRUU'R'F'
+    ///
+    /// # Panics
+    /// This function will panic if it encounters an invalid character. Allowed characters are FRUBLD, ', `, \u{2032} (prime), and 2.
     ///
     /// # Example
     /// ```
@@ -530,7 +545,7 @@ impl Cube {
         }
     }
 
-    /// Apply a single move to the cube.
+    /// Apply a single move to the cube. See lemma 11.4 in the Chen paper for details about how x and y are calculated.
     ///
     /// # Example
     /// ```
@@ -604,7 +619,7 @@ impl Cube {
             },
             Move::L => {
                 X(
-                    (self.x.4 + 2) % 3,
+                    (self.x.3 + 2) % 3,
                     self.x.1,
                     self.x.2,
                     (self.x.4 + 1) % 3,
@@ -865,5 +880,67 @@ mod tests {
     #[test]
     fn test_default_solved() {
         assert!(Cube::new().is_solved());
+    }
+
+    #[test]
+    fn test_permute_bottom_corners() {
+        let mut cube = Cube::new();
+        cube.apply_moves("R'UR'D2RU'R'D2R2");
+        cube.apply_moves("R2D2RUR'D2RU'R");
+        println!("{:?}", cube);
+
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_f_fprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("FF'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_r_rprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("RR'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_u_uprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("UU'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_b_bprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("BB'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_l_lprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("LL'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_d_dprime() {
+        let mut cube = Cube::new();
+        cube.apply_moves("DD'");
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_move_and_unmove() {
+        let mut cube = Cube::new();
+        cube.apply_moves("FRUBLD");
+        cube.apply_moves("D'L'B'U'R'F'");
+        println!("{:?}", cube);
+
+        assert!(cube.is_solved());
     }
 }
