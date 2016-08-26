@@ -3,9 +3,4 @@ name = "rubik"
 version = "0.1.0"
 authors = ["Peter Beard <peter.b.beard+github@gmail.com>"]
 
-[[bin]]
-doc = false
-name = "main"
-path = "src/main.rs"
-
 [dependencies]
