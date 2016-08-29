@@ -670,7 +670,7 @@ impl Cube {
                     self.y.9,
                     self.y.7,
                     self.y.8,
-                    self.y.6,
+                    self.y.5,
                     self.y.10,
                     self.y.11
                 )
