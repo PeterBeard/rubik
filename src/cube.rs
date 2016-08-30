@@ -836,7 +836,6 @@ mod tests {
         let mut cube = Cube::new();
         cube.apply_moves("R'UR'D2RU'R'D2R2");
         cube.apply_moves("R2D2RUR'D2RU'R");
-        println!("{:?}", cube);
 
         assert!(cube.is_solved());
     }
@@ -888,8 +887,37 @@ mod tests {
         let mut cube = Cube::new();
         cube.apply_moves("FRUBLD");
         cube.apply_moves("D'L'B'U'R'F'");
-        println!("{:?}", cube);
 
         assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_solved_face_u() {
+        assert_eq!(Cube::new().get_face(Face::U), [Face::U; 9]);
+    }
+
+    #[test]
+    fn test_solved_face_r() {
+        assert_eq!(Cube::new().get_face(Face::R), [Face::R; 9]);
+    }
+
+    #[test]
+    fn test_solved_face_f() {
+        assert_eq!(Cube::new().get_face(Face::F), [Face::F; 9]);
+    }
+
+    #[test]
+    fn test_solved_face_d() {
+        assert_eq!(Cube::new().get_face(Face::D), [Face::D; 9]);
+    }
+
+    #[test]
+    fn test_solved_face_l() {
+        assert_eq!(Cube::new().get_face(Face::L), [Face::L; 9]);
+    }
+
+    #[test]
+    fn test_solved_face_b() {
+        assert_eq!(Cube::new().get_face(Face::B), [Face::B; 9]);
     }
 }
