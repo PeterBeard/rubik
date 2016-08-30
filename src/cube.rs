@@ -465,9 +465,111 @@ impl EdgePermutation {
 /// Corner orientation state
 struct X(u8,u8,u8,u8,u8,u8,u8,u8);
 
+/// Swap values in an X vector
+fn swap_x(values: X, indices: &[u8; 8]) -> X {
+    let mut swapped = [0u8; 8];
+    let mut curr = 0;
+    for &i in indices.iter() {
+        swapped[curr] = match i {
+            0 => values.0,
+            1 => values.1,
+            2 => values.2,
+            3 => values.3,
+            4 => values.4,
+            5 => values.5,
+            6 => values.6,
+            7 => values.7,
+            _ => panic!("Invalid index for X tuple"),
+        };
+        curr += 1;
+    }
+
+    X(
+        swapped[0],
+        swapped[1],
+        swapped[2],
+        swapped[3],
+        swapped[4],
+        swapped[5],
+        swapped[6],
+        swapped[7],
+    )
+}
+
+/// Add values to an X vector
+fn add_x(values: X, addends: &[u8; 8]) -> X {
+    X(
+        (values.0 + addends[0]) % 3,
+        (values.1 + addends[1]) % 3,
+        (values.2 + addends[2]) % 3,
+        (values.3 + addends[3]) % 3,
+        (values.4 + addends[4]) % 3,
+        (values.5 + addends[5]) % 3,
+        (values.6 + addends[6]) % 3,
+        (values.7 + addends[7]) % 3,
+    )
+}
+
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
 /// Edge orientation state
 struct Y(u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8);
+
+/// Swap values in a Y vector
+fn swap_y(values: Y, indices: &[u8; 12]) -> Y {
+    let mut swapped = [0u8; 12];
+    let mut curr = 0;
+    for &i in indices.iter() {
+        swapped[curr] = match i {
+            0 => values.0,
+            1 => values.1,
+            2 => values.2,
+            3 => values.3,
+            4 => values.4,
+            5 => values.5,
+            6 => values.6,
+            7 => values.7,
+            8 => values.8,
+            9 => values.9,
+            10 => values.10,
+            11 => values.11,
+            _ => panic!("Invalid index for Y tuple"),
+        };
+        curr += 1;
+    }
+
+    Y(
+        swapped[0],
+        swapped[1],
+        swapped[2],
+        swapped[3],
+        swapped[4],
+        swapped[5],
+        swapped[6],
+        swapped[7],
+        swapped[8],
+        swapped[9],
+        swapped[10],
+        swapped[11],
+    )
+}
+
+/// Add values to a Y vector
+fn add_y(values: Y, addends: &[u8; 12]) -> Y {
+    Y(
+        (values.0 + addends[0]) % 2,
+        (values.1 + addends[1]) % 2,
+        (values.2 + addends[2]) % 2,
+        (values.3 + addends[3]) % 2,
+        (values.4 + addends[4]) % 2,
+        (values.5 + addends[5]) % 2,
+        (values.6 + addends[6]) % 2,
+        (values.7 + addends[7]) % 2,
+        (values.8 + addends[8]) % 2,
+        (values.9 + addends[9]) % 2,
+        (values.10 + addends[10]) % 2,
+        (values.11 + addends[11]) % 2,
+    )
+}
 
 #[derive(Clone, Eq, PartialEq)]
 /// Maintain the state information for a Rubik's cube.
@@ -568,180 +670,27 @@ impl Cube {
         self.tau.permute(m);
 
         // Compute X and Y
-        let new_x = match m {
-            Move::F => {
-                X(
-                    (self.x.5 + 1) % 3,
-                    (self.x.0 + 2) % 3,
-                    self.x.2,
-                    self.x.3,
-                    self.x.4,
-                    (self.x.6 + 2) % 3,
-                    (self.x.1 + 1) % 3,
-                    self.x.7
-                )
-            },
-            Move::R => {
-                X(
-                    self.x.0,
-                    (self.x.6 + 1) % 3,
-                    (self.x.1 + 2) % 3,
-                    self.x.3,
-                    self.x.4,
-                    self.x.5,
-                    (self.x.7 + 2) % 3,
-                    (self.x.2 + 1) % 3
-                )
-            },
-            Move::U => {
-                X(
-                    self.x.1,
-                    self.x.2,
-                    self.x.3,
-                    self.x.0,
-                    self.x.4,
-                    self.x.5,
-                    self.x.6,
-                    self.x.7
-                )
-            },
-            Move::B => {
-                X(
-                    self.x.0,
-                    self.x.1,
-                    (self.x.7 + 1) % 3,
-                    (self.x.2 + 2) % 3,
-                    (self.x.3 + 1) % 3,
-                    self.x.5,
-                    self.x.6,
-                    (self.x.4 + 2) % 3
-                )
-            },
-            Move::L => {
-                X(
-                    (self.x.3 + 2) % 3,
-                    self.x.1,
-                    self.x.2,
-                    (self.x.4 + 1) % 3,
-                    (self.x.5 + 2) % 3,
-                    (self.x.0 + 1) % 3,
-                    self.x.6,
-                    self.x.7
-                )
-            },
-            Move::D => {
-                X(
-                    self.x.0,
-                    self.x.1,
-                    self.x.2,
-                    self.x.3,
-                    self.x.7,
-                    self.x.4,
-                    self.x.5,
-                    self.x.6
-                )
-            },
+        let (swap_indices, addends) = match m {
+            Move::F => ([5,0,2,3,4,6,1,7], [1,2,0,0,0,2,1,0]),
+            Move::R => ([0,6,1,3,4,5,7,2], [0,1,2,0,0,0,2,1]),
+            Move::U => ([1,2,3,0,4,5,6,7], [0u8; 8]),
+            Move::B => ([0,1,7,2,3,5,6,4], [0,0,1,2,1,0,0,2]),
+            Move::L => ([3,1,2,4,5,0,6,7], [2,0,0,1,2,1,0,0]),
+            Move::D => ([0,1,2,3,7,4,5,6], [0u8; 8]),
         };
-        let new_y = match m {
-            Move::F => {
-                Y(
-                    self.y.0,
-                    self.y.1,
-                    (self.y.7 + 1) % 2,
-                    self.y.3,
-                    self.y.4,
-                    self.y.5,
-                    (self.y.2 + 1) % 2,
-                    (self.y.10 + 1) % 2,
-                    self.y.8,
-                    self.y.9,
-                    (self.y.6 + 1) % 2,
-                    self.y.11
-                )
-            },
-            Move::R => {
-                Y(
-                    self.y.0,
-                    self.y.6,
-                    self.y.2,
-                    self.y.3,
-                    self.y.4,
-                    self.y.1,
-                    self.y.9,
-                    self.y.7,
-                    self.y.8,
-                    self.y.5,
-                    self.y.10,
-                    self.y.11
-                )
-            },
-            Move::U => {
-                Y(
-                    self.y.3,
-                    self.y.0,
-                    self.y.1,
-                    self.y.2,
-                    self.y.4,
-                    self.y.5,
-                    self.y.6,
-                    self.y.7,
-                    self.y.8,
-                    self.y.9,
-                    self.y.10,
-                    self.y.11
-                )
-            },
-            Move::B => {
-                Y(
-                    (self.y.5 + 1) % 2,
-                    self.y.1,
-                    self.y.2,
-                    self.y.3,
-                    (self.y.0 + 1) % 2,
-                    (self.y.8 + 1) % 2,
-                    self.y.6,
-                    self.y.7,
-                    (self.y.4 + 1) % 2,
-                    self.y.9,
-                    self.y.10,
-                    self.y.11
-                )
-            },
-            Move::L => {
-                Y(
-                    self.y.0,
-                    self.y.1,
-                    self.y.2,
-                    self.y.4,
-                    self.y.11,
-                    self.y.5,
-                    self.y.6,
-                    self.y.3,
-                    self.y.8,
-                    self.y.9,
-                    self.y.10,
-                    self.y.7
-                )
-            },
-            Move::D => {
-                Y(
-                    self.y.0,
-                    self.y.1,
-                    self.y.2,
-                    self.y.3,
-                    self.y.4,
-                    self.y.5,
-                    self.y.6,
-                    self.y.7,
-                    self.y.9,
-                    self.y.10,
-                    self.y.11,
-                    self.y.8
-                )
-            },
+        self.x = swap_x(self.x, &swap_indices);
+        self.x = add_x(self.x, &addends);
+
+        let (swap_indices, addends) = match m {
+            Move::F => ([0,1,7,3,4,5,2,10,8,9,6,11], [0,0,1,0,0,0,1,1,0,0,1,0]),
+            Move::R => ([0,6,2,3,4,1,9,7,8,5,10,11], [0u8; 12]),
+            Move::U => ([3,0,1,2,4,5,6,7,8,9,10,11], [0u8; 12]),
+            Move::B => ([5,1,2,3,0,8,6,7,4,9,10,11], [1,0,0,0,1,1,0,0,1,0,0,0]),
+            Move::L => ([0,1,2,4,11,5,6,3,8,9,10,7], [0u8; 12]),
+            Move::D => ([0,1,2,3,4,5,6,7,9,10,11,8], [0u8; 12]),
         };
-        self.x = new_x;
-        self.y = new_y;
+        self.y = swap_y(self.y, &swap_indices);
+        self.y = add_y(self.y, &addends);
     }
 
     /// Determine whether the cube is in the solved state
