@@ -2,6 +2,8 @@
 // Copyright Peter Beard, licensed under the GPLv3. See LICENSE for details.
 //
 //! Objects and functions for maintaining/manipulating Rubik's cube state.
+use super::rand::{thread_rng, Rng};
+
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::fmt;
@@ -595,6 +597,26 @@ impl Cube {
             tau: EdgePermutation::new(),
             x: X::default(),
             y: Y::default(),
+        }
+    }
+
+    /// Apply a random series of moves to scramble the cube
+    /// # Arguments
+    /// move_count: The number of random moves to apply to the cube.
+    /// # Example
+    /// ```
+    /// use rubik::cube::*;
+    /// 
+    /// let mut cube = Cube::new();
+    /// cube.scramble(20);
+    /// assert!(!cube.is_solved());
+    /// ```
+    pub fn scramble(&mut self, move_count: u8) {
+        let moves = [Move::F, Move::R, Move::U, Move::B, Move::L, Move::D];
+        let mut rng = thread_rng();
+        for _ in 0..move_count {
+            let m = rng.choose(&moves).unwrap();
+            self.apply_move(*m);
         }
     }
 
