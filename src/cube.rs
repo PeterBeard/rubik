@@ -716,7 +716,50 @@ impl Cube {
         [corner_faces[0], edge_faces[0], corner_faces[1],
         edge_faces[3], center, edge_faces[1],
         corner_faces[3], edge_faces[2], corner_faces[2]]
+    }
 
+    /// Print the current state of the cube
+    ///
+    /// Displays all the faces laid out as follows:
+    ///   U
+    ///  LFRB
+    ///   D
+    pub fn print(&self) {
+        let faces = [
+            self.get_face(Face::U),
+            self.get_face(Face::L),
+            self.get_face(Face::F),
+            self.get_face(Face::R),
+            self.get_face(Face::B),
+            self.get_face(Face::D),
+        ];
+        print!("\n   ");
+        for i in 0..9 {
+            print!("{:?}", faces[0][i]);
+
+            if i > 0 && (i+1) % 3 == 0 {
+                print!("\n   ");
+            }
+        }
+        print!("\r");
+        for y in 0..3 {
+            for &face in &faces {
+                for x in 0..3 {
+                    print!("{:?}", face[x+y*3]);
+                }
+            }
+            print!("\n");
+        }
+        
+        print!("   ");
+        for i in 0..9 {
+            print!("{:?}", faces[5][i]);
+
+            if i > 0 && (i+1) % 3 == 0 {
+                print!("\n   ");
+            }
+        }
+        print!("\r");
     }
 
     /// Get the orientation of a corner cubicle
