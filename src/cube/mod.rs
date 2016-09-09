@@ -651,11 +651,7 @@ impl Cube {
     /// assert_eq!(cube.get_face(Face::U), [Face::U; 9]);
     /// ```
     pub fn get_face(&self, face: Face) -> [Face; 9] {
-        // Get the cubie in each cubicle of this face
-        // The center is always the same
-        let center = face;
-
-        // Find the corners located in this face clockwise from top left
+        // Find the corner cubicles located in this face clockwise from top left
         use self::Corner::*;
         let corners = match face {
             Face::F => [UFL, URF, DFR, DLF],
@@ -666,7 +662,7 @@ impl Cube {
             Face::D => [DLF, DFR, DRB, DBL],
         };
 
-        // Find the edges in the face clockwise from the top
+        // Find the edge cubicles in the face clockwise from the top
         use self::Edge::*;
         let edges = match face {
             Face::F => [UF, RF, DF, LF],
@@ -678,44 +674,26 @@ impl Cube {
         };
 
         // Get the corner and edge cubies in each cubicle of interest
-        let corner_indices = [
-            self.sigma.get(corners[0]),
-            self.sigma.get(corners[1]),
-            self.sigma.get(corners[2]),
-            self.sigma.get(corners[3])
-        ];
-        let edge_indices = [
-            self.tau.get(edges[0]),
-            self.tau.get(edges[1]),
-            self.tau.get(edges[2]),
-            self.tau.get(edges[3])
-        ];
+        let corner_cubies: Vec<_> = corners.iter().map(|&c| self.sigma.get(c)).collect();
+        let edge_cubies: Vec<_> = edges.iter().map(|&e| self.tau.get(e)).collect();
 
         // Now get the orientations for the cubies we care about
-        let corner_orientations = [
-            self.get_corner_orientation(corners[0]),
-            self.get_corner_orientation(corners[1]),
-            self.get_corner_orientation(corners[2]),
-            self.get_corner_orientation(corners[3])
-        ];
-        let edge_orientations = [
-            self.get_edge_orientation(edges[0]),
-            self.get_edge_orientation(edges[1]),
-            self.get_edge_orientation(edges[2]),
-            self.get_edge_orientation(edges[3])
-        ];
+        let corner_orient: Vec<_> = corners.iter().map(|&c| self.get_corner_orientation(c)).collect();
+        let edge_orient: Vec<_> = edges.iter().map(|&e| self.get_edge_orientation(e)).collect();
 
-        let mut corner_faces = [Face::U; 4];
-        let mut edge_faces = [Face::U; 4];
+        // Finally find the visible face of each cubie
+        let corner_faces: Vec<_> = corners.iter().enumerate().map(
+            |(i, &c)| get_corner_face(c, corner_cubies[i], face, corner_orient[i])
+        ).collect();
 
-        for i in 0..4 {
-            corner_faces[i] = get_corner_face(corners[i], corner_indices[i], face, corner_orientations[i]);
-            edge_faces[i] = get_edge_face(edges[i], edge_indices[i], face, edge_orientations[i]);
-        }
+        let edge_faces: Vec<_> = edges.iter().enumerate().map(
+            |(i, &e)| get_edge_face(e, edge_cubies[i], face, edge_orient[i])
+        ).collect();
 
-        [corner_faces[0], edge_faces[0], corner_faces[1],
-        edge_faces[3], center, edge_faces[1],
-        corner_faces[3], edge_faces[2], corner_faces[2]]
+        // Returned structure lists the faces clockwise from top left
+        [corner_faces[0],   edge_faces[0],  corner_faces[1],
+        edge_faces[3],      face,           edge_faces[1],
+        corner_faces[3],    edge_faces[2],  corner_faces[2]]
     }
 
     /// Print the current state of the cube
