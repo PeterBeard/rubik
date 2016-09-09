@@ -21,77 +21,45 @@ enum Corner {
     DRB,
 }
 
-/// Get the corner cubie face corresponding to a certain orientation index
-///
-/// # Panics
-/// This function panics if it encounters an invalid orientation
-fn get_corner_face(corner: Corner, orient: u8) -> Face {
+/// Decompose a corner into faces
+fn decompose_corner(corner: Corner) -> (Face, Face, Face) {
     use self::Corner::*;
     match corner {
-        UFL => {
-            match orient {
-                0 => Face::U,
-                1 => Face::F,
-                2 => Face::L,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        URF => {
-            match orient {
-                0 => Face::U,
-                1 => Face::R,
-                2 => Face::F,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        UBR => {
-            match orient {
-                0 => Face::U,
-                1 => Face::B,
-                2 => Face::R,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        }
-        ULB => {
-            match orient {
-                0 => Face::U,
-                1 => Face::L,
-                2 => Face::B,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        DBL => {
-            match orient {
-                0 => Face::D,
-                1 => Face::B,
-                2 => Face::L,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        DLF => {
-            match orient {
-                0 => Face::D,
-                1 => Face::L,
-                2 => Face::F,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        DFR => {
-            match orient {
-                0 => Face::D,
-                1 => Face::F,
-                2 => Face::R,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
-        DRB => {
-            match orient {
-                0 => Face::D,
-                1 => Face::R,
-                2 => Face::B,
-				_ => panic!("Invalid corner orientation: {}", orient)
-            }
-        },
+        UFL => (Face::U, Face::F, Face::L),
+        URF => (Face::U, Face::R, Face::F),
+        UBR => (Face::U, Face::B, Face::R),
+        ULB => (Face::U, Face::L, Face::B),
+        DBL => (Face::D, Face::B, Face::L),
+        DLF => (Face::D, Face::L, Face::F),
+        DFR => (Face::D, Face::F, Face::R),
+        DRB => (Face::D, Face::R, Face::B),
+    }
+}
+
+/// Orient the faces of a corner
+fn orient_corner(corner: Corner, orientation: u8) -> (Face, Face, Face) {
+    let faces = decompose_corner(corner);
+    
+    if orientation == 0 {
+        faces
+    } else if orientation == 1 {
+        (faces.1, faces.2, faces.0)
+    } else {
+        (faces.2, faces.0, faces.1)
+    }
+}
+
+/// Get the corner cubie face corresponding to a certain orientation index
+fn get_corner_face(cubicle: Corner, cubie: Corner, face: Face, orientation: u8) -> Face {
+    let oriented_cubie = orient_corner(cubie, orientation);
+    let faces = decompose_corner(cubicle);
+
+    if faces.0 == face {
+        oriented_cubie.0
+    } else if faces.1 == face {
+        oriented_cubie.1
+    } else {
+        oriented_cubie.2
     }
 }
 
@@ -112,97 +80,48 @@ enum Edge {
     DL,
 }
 
+/// Decompose an edge into faces
+fn decompose_edge(edge: Edge) -> (Face, Face) {
+    use self::Edge::*;
+    match edge {
+        UB => (Face::U, Face::B),
+        UR => (Face::U, Face::R),
+        UF => (Face::U, Face::F),
+        UL => (Face::U, Face::L),
+        LB => (Face::B, Face::L),
+        RB => (Face::B, Face::R),
+        RF => (Face::F, Face::R),
+        LF => (Face::F, Face::L),
+        DB => (Face::D, Face::B),
+        DR => (Face::D, Face::R),
+        DF => (Face::D, Face::F),
+        DL => (Face::D, Face::L),
+    }
+}
+
+/// Orient the faces of an edge
+fn orient_edge(edge: Edge, orientation: u8) -> (Face, Face) {
+    let faces = decompose_edge(edge);
+
+    if orientation == 0 {
+        faces
+    } else {
+        (faces.1, faces.0)
+    }
+}
+
 /// Get the edge cubie face corresponding to a certain orientation index
 ///
 /// # Panics
 /// This function panics if it encounters an invalid orientation
-fn get_edge_face(edge: Edge, orient: u8) -> Face {
-    use self::Edge::*;
-    match edge {
-        UB => {
-            match orient {
-                0 => Face::U,
-                1 => Face::B,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        UR => {
-            match orient {
-                0 => Face::U,
-                1 => Face::R,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        UF => {
-            match orient {
-                0 => Face::U,
-                1 => Face::F,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        UL => {
-            match orient {
-                0 => Face::U,
-                1 => Face::L,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        LB => {
-            match orient {
-                0 => Face::L,
-                1 => Face::B,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        RB => {
-            match orient {
-                0 => Face::R,
-                1 => Face::B,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        RF => {
-            match orient {
-                0 => Face::R,
-                1 => Face::F,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        LF => {
-            match orient {
-                0 => Face::L,
-                1 => Face::F,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        DB => {
-            match orient {
-                0 => Face::D,
-                1 => Face::B,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        DR => {
-            match orient {
-                0 => Face::D,
-                1 => Face::R,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        DF => {
-            match orient {
-                0 => Face::D,
-                1 => Face::F,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
-        DL => {
-            match orient {
-                0 => Face::D,
-                1 => Face::L,
-                _ => panic!("Invalid edge orientation: {}", orient)
-            }
-        },
+fn get_edge_face(cubicle: Edge, cubie: Edge, face: Face, orientation: u8) -> Face {
+    let oriented_edge = orient_edge(cubie, orientation);
+    let faces = decompose_edge(cubicle);
+
+    if faces.0 == face {
+        oriented_edge.0
+    } else {
+        oriented_edge.1
     }
 }
 
@@ -470,8 +389,7 @@ struct X(u8,u8,u8,u8,u8,u8,u8,u8);
 /// Swap values in an X vector
 fn swap_x(values: X, indices: &[u8; 8]) -> X {
     let mut swapped = [0u8; 8];
-    let mut curr = 0;
-    for &i in indices.iter() {
+    for (curr, &i) in indices.iter().enumerate() {
         swapped[curr] = match i {
             0 => values.0,
             1 => values.1,
@@ -483,7 +401,6 @@ fn swap_x(values: X, indices: &[u8; 8]) -> X {
             7 => values.7,
             _ => panic!("Invalid index for X tuple"),
         };
-        curr += 1;
     }
 
     X(
@@ -519,8 +436,7 @@ struct Y(u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8);
 /// Swap values in a Y vector
 fn swap_y(values: Y, indices: &[u8; 12]) -> Y {
     let mut swapped = [0u8; 12];
-    let mut curr = 0;
-    for &i in indices.iter() {
+    for (curr, &i) in indices.iter().enumerate() {
         swapped[curr] = match i {
             0 => values.0,
             1 => values.1,
@@ -536,7 +452,6 @@ fn swap_y(values: Y, indices: &[u8; 12]) -> Y {
             11 => values.11,
             _ => panic!("Invalid index for Y tuple"),
         };
-        curr += 1;
     }
 
     Y(
@@ -686,7 +601,6 @@ impl Cube {
     /// ```
     pub fn apply_move(&mut self, m: Move) {
         use self::Move;
-        println!("Moving {:?}", m);
         // Compute sigma and tau
         self.sigma.permute(m);
         self.tau.permute(m);
@@ -745,11 +659,11 @@ impl Cube {
         use self::Corner::*;
         let corners = match face {
             Face::F => [UFL, URF, DFR, DLF],
-            Face::R => [URF, UBR, DRB, DBL],
+            Face::R => [URF, UBR, DRB, DFR],
             Face::U => [ULB, UBR, URF, UFL],
             Face::B => [UBR, ULB, DBL, DRB],
             Face::L => [ULB, UFL, DLF, DBL],
-            Face::D => [DBL, DRB, DLF, DFR],
+            Face::D => [DLF, DFR, DRB, DBL],
         };
 
         // Find the edges in the face clockwise from the top
@@ -760,7 +674,7 @@ impl Cube {
             Face::U => [UB, UR, UF, UL],
             Face::B => [UB, LB, DB, RB],
             Face::L => [UL, LF, DL, LB],
-            Face::D => [DB, DL, DF, DR],
+            Face::D => [DF, DR, DB, DL],
         };
 
         // Get the corner and edge cubies in each cubicle of interest
@@ -795,14 +709,9 @@ impl Cube {
         let mut edge_faces = [Face::U; 4];
 
         for i in 0..4 {
-            corner_faces[i] = get_corner_face(corner_indices[i],corner_orientations[i]);
-            edge_faces[i] = get_edge_face(edge_indices[i],edge_orientations[i]);
+            corner_faces[i] = get_corner_face(corners[i], corner_indices[i], face, corner_orientations[i]);
+            edge_faces[i] = get_edge_face(edges[i], edge_indices[i], face, edge_orientations[i]);
         }
-
-        println!("{:?}", corner_indices);
-        println!("{:?}", corner_orientations);
-        println!("{:?}", edge_indices);
-        println!("{:?}", edge_orientations);
 
         [corner_faces[0], edge_faces[0], corner_faces[1],
         edge_faces[3], center, edge_faces[1],
@@ -941,5 +850,113 @@ mod tests {
     #[test]
     fn test_solved_face_b() {
         assert_eq!(Cube::new().get_face(Face::B), [Face::B; 9]);
+    }
+
+    #[test]
+    fn test_move_f() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("F");
+        assert_eq!(cube.get_face(F), [F; 9]);
+        assert_eq!(cube.get_face(R), [U,R,R,U,R,R,U,R,R]);
+        assert_eq!(cube.get_face(U), [U,U,U,U,U,U,L,L,L]);
+        assert_eq!(cube.get_face(B), [B; 9]);
+        assert_eq!(cube.get_face(L), [L,L,D,L,L,D,L,L,D]);
+        assert_eq!(cube.get_face(D), [R,R,R,D,D,D,D,D,D]);
+    }
+
+    #[test]
+    fn test_move_r() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("R");
+        assert_eq!(cube.get_face(F), [F,F,D,F,F,D,F,F,D]);
+        assert_eq!(cube.get_face(R), [R; 9]);
+        assert_eq!(cube.get_face(U), [U,U,F,U,U,F,U,U,F]);
+        assert_eq!(cube.get_face(B), [U,B,B,U,B,B,U,B,B]);
+        assert_eq!(cube.get_face(L), [L; 9]);
+        assert_eq!(cube.get_face(D), [D,D,B,D,D,B,D,D,B]);
+    }
+
+    #[test]
+    fn test_move_u() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("U");
+        assert_eq!(cube.get_face(F), [R,R,R,F,F,F,F,F,F]);
+        assert_eq!(cube.get_face(R), [B,B,B,R,R,R,R,R,R]);
+        assert_eq!(cube.get_face(U), [U; 9]);
+        assert_eq!(cube.get_face(B), [L,L,L,B,B,B,B,B,B]);
+        assert_eq!(cube.get_face(L), [F,F,F,L,L,L,L,L,L]);
+        assert_eq!(cube.get_face(D), [D; 9]);
+    }
+
+    #[test]
+    fn test_move_b() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("B");
+        assert_eq!(cube.get_face(F), [F; 9]);
+        assert_eq!(cube.get_face(R), [R,R,D,R,R,D,R,R,D]);
+        assert_eq!(cube.get_face(U), [R,R,R,U,U,U,U,U,U]);
+        assert_eq!(cube.get_face(B), [B; 9]);
+        assert_eq!(cube.get_face(L), [U,L,L,U,L,L,U,L,L]);
+        assert_eq!(cube.get_face(D), [D,D,D,D,D,D,L,L,L]);
+    }
+
+    #[test]
+    fn test_move_l() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("L");
+        assert_eq!(cube.get_face(F), [U,F,F,U,F,F,U,F,F]);
+        assert_eq!(cube.get_face(R), [R; 9]);
+        assert_eq!(cube.get_face(U), [B,U,U,B,U,U,B,U,U]);
+        assert_eq!(cube.get_face(B), [B,B,D,B,B,D,B,B,D]);
+        assert_eq!(cube.get_face(L), [L; 9]);
+        assert_eq!(cube.get_face(D), [F,D,D,F,D,D,F,D,D]);
+    }
+
+    #[test]
+    fn test_move_d() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("D");
+        assert_eq!(cube.get_face(F), [F,F,F,F,F,F,L,L,L]);
+        assert_eq!(cube.get_face(R), [R,R,R,R,R,R,F,F,F]);
+        assert_eq!(cube.get_face(U), [U; 9]);
+        assert_eq!(cube.get_face(B), [B,B,B,B,B,B,R,R,R]);
+        assert_eq!(cube.get_face(L), [L,L,L,L,L,L,B,B,B]);
+        assert_eq!(cube.get_face(D), [D; 9]);
+    }
+
+    #[test]
+    fn test_moved_faces() {
+        use super::Face::*;
+
+        let mut cube = Cube::new();
+        cube.apply_moves("R2U'FLB2");
+
+        let faces = [
+            cube.get_face(U),
+            cube.get_face(R),
+            cube.get_face(F),
+            cube.get_face(D),
+            cube.get_face(L),
+            cube.get_face(B),
+        ];
+
+        assert_eq!(faces[0], [U,D,B,B,U,U,R,L,B]);
+        assert_eq!(faces[1], [U,F,U,U,R,L,U,R,L]);
+        assert_eq!(faces[2], [D,F,L,U,F,L,L,B,L]);
+        assert_eq!(faces[3], [F,R,F,F,D,U,D,D,B]);
+        assert_eq!(faces[4], [R,L,F,R,L,B,B,D,D]);
+        assert_eq!(faces[5], [R,B,F,D,B,F,D,R,R]);
     }
 }
