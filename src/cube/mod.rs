@@ -111,9 +111,6 @@ fn orient_edge(edge: Edge, orientation: u8) -> (Face, Face) {
 }
 
 /// Get the edge cubie face corresponding to a certain orientation index
-///
-/// # Panics
-/// This function panics if it encounters an invalid orientation
 fn get_edge_face(cubicle: Edge, cubie: Edge, face: Face, orientation: u8) -> Face {
     let oriented_edge = orient_edge(cubie, orientation);
     let faces = decompose_edge(cubicle);
