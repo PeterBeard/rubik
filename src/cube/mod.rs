@@ -4,6 +4,8 @@
 //! Objects and functions for maintaining/manipulating Rubik's cube state.
 use super::rand::{thread_rng, Rng};
 
+use super::solver::Solver;
+
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::fmt;
@@ -691,6 +693,18 @@ impl Cube {
         [corner_faces[0],   edge_faces[0],  corner_faces[1],
         edge_faces[3],      face,           edge_faces[1],
         corner_faces[3],    edge_faces[2],  corner_faces[2]]
+    }
+
+    /// Solve the cube using the given method
+    ///
+    /// Returns a vector of the moves used to solve the cube
+    pub fn solve<T: Solver>(&mut self, solver: &mut T) -> Vec<Move> {
+        let moves = solver.find_solution(&self);
+        for m in moves.clone() {
+            self.apply_move(m);
+        }
+
+        moves
     }
 
     /// Print the current state of the cube

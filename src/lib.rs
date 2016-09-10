@@ -4,3 +4,4 @@
 extern crate rand;
 
 pub mod cube;
+pub mod solver;
