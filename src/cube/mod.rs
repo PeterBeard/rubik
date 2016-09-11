@@ -786,5 +786,23 @@ impl Cube {
     }
 }
 
+/// Perform a [superflip](https://en.wikipedia.org/wiki/Superflip) on a cube
+///
+/// # Example
+/// ```
+/// use rubik::cube::{Cube, superflip};
+///
+/// let c = Cube::new();
+/// let superc = superflip(&c);
+///
+/// assert!(c.is_solved());
+/// assert!(!superc.is_solved());
+/// ```
+pub fn superflip(cube: &Cube) -> Cube {
+    let mut c = cube.clone();
+    c.apply_moves("UR2FBRB2RU2LB2RU'D'R2FR'LB2U2F2");
+    c
+}
+
 #[cfg(test)]
 mod tests;
