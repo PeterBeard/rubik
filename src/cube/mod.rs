@@ -594,7 +594,20 @@ impl Cube {
     /// assert!(!cube.is_solved());
     /// ```
     pub fn scramble(&mut self, move_count: u8) {
-        let moves = [Move::F, Move::R, Move::U, Move::B, Move::L, Move::D];
+        let moves = [
+            Move::F,
+            Move::R,
+            Move::U,
+            Move::B,
+            Move::L,
+            Move::D,
+            Move::FPrime,
+            Move::RPrime,
+            Move::UPrime,
+            Move::BPrime,
+            Move::LPrime,
+            Move::DPrime,
+        ];
         let mut rng = thread_rng();
         for _ in 0..move_count {
             let m = rng.choose(&moves).unwrap();
