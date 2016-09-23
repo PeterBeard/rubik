@@ -11,7 +11,58 @@ fn test_permute_bottom_corners() {
     cube.apply_moves("R'UR'D2RU'R'D2R2");
     cube.apply_moves("R2D2RUR'D2RU'R");
 
+    println!("{:?}", cube);
+
     assert!(cube.is_solved());
+}
+
+#[test]
+fn test_f_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("FFF");
+    d.apply_moves("F'");
+    assert_eq!(c, d);
+}
+#[test]
+fn test_r_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("RRR");
+    d.apply_moves("R'");
+    assert_eq!(c, d);
+}
+#[test]
+fn test_u_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("UUU");
+    d.apply_moves("U'");
+    assert_eq!(c, d);
+}
+#[test]
+fn test_b_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("BBB");
+    d.apply_moves("B'");
+    assert_eq!(c, d);
+}
+#[test]
+fn test_l_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("LLL");
+    d.apply_moves("L'");
+    assert_eq!(c, d);
+}
+#[test]
+fn test_d_prime_equivalence() {
+    let mut c = Cube::new();
+    let mut d = Cube::new();
+    c.apply_moves("DDD");
+    d.apply_moves("D'");
+    assert_eq!(c, d);
 }
 
 #[test]
@@ -62,6 +113,7 @@ fn test_move_and_unmove() {
     cube.apply_moves("FRUBLD");
     cube.apply_moves("D'L'B'U'R'F'");
 
+    println!("{:?}", cube);
     assert!(cube.is_solved());
 }
 

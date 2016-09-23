@@ -134,6 +134,38 @@ pub enum Move {
     B,
     L,
     D,
+    FPrime,
+    RPrime,
+    UPrime,
+    BPrime,
+    LPrime,
+    DPrime,
+}
+
+/// Create a Move from a &str. See
+/// [http://rubiks.wikia.com/wiki/Notation](http://rubiks.wikia.com/wiki/Notation) 
+/// for notation.
+///
+/// # Panics
+/// This function will panic if the input isn't a valid move, i.e. not one of FRUBLD(').
+impl<'a> From<&'a str> for Move {
+    fn from(s: &'a str) -> Move {
+        match s {
+            "F" => Move::F,
+            "R" => Move::R,
+            "U" => Move::U,
+            "B" => Move::B,
+            "L" => Move::L,
+            "D" => Move::D,
+            "F'" => Move::FPrime,
+            "R'" => Move::RPrime,
+            "U'" => Move::UPrime,
+            "B'" => Move::BPrime,
+            "L'" => Move::LPrime,
+            "D'" => Move::DPrime,
+            _ => panic!("Invalid move: {}", s),
+        }
+    }
 }
 
 /// Create a Move from a char. See
@@ -141,17 +173,17 @@ pub enum Move {
 /// for notation.
 ///
 /// # Panics
-/// This function will panic if the input char isn't a valid move, i.e. not one of FRUBLD.
+/// This function will panic if the input isn't a valid move, i.e. not one of FRUBLD.
 impl From<char> for Move {
-    fn from(ch: char) -> Move {
-        match ch {
+    fn from(c: char) -> Move {
+        match c {
             'F' => Move::F,
             'R' => Move::R,
             'U' => Move::U,
             'B' => Move::B,
             'L' => Move::L,
             'D' => Move::D,
-            _ => panic!("Invalid move: {}", ch),
+            _ => panic!("Invalid move: {}", c),
         }
     }
 }
@@ -289,6 +321,24 @@ impl CornerPermutation {
             Move::D => {
                 (Corner::DRB, Corner::DBL, Corner::DLF, Corner::DFR)
             },
+            Move::FPrime => {
+                (Corner::URF, Corner::UFL, Corner::DLF, Corner::DFR)
+            },
+            Move::RPrime => {
+                (Corner::UBR, Corner::URF, Corner::DFR, Corner::DRB)
+            },
+            Move::UPrime => {
+                (Corner::URF, Corner::UBR, Corner::ULB, Corner::UFL)
+            },
+            Move::BPrime => {
+                (Corner::ULB, Corner::UBR, Corner::DRB, Corner::DBL)
+            },
+            Move::LPrime => {
+                (Corner::UFL, Corner::ULB, Corner::DBL, Corner::DLF)
+            },
+            Move::DPrime => {
+                (Corner::DRB, Corner::DFR, Corner::DLF, Corner::DBL)
+            },
         };
 
         let mut new_map = self.map.clone();
@@ -369,6 +419,24 @@ impl EdgePermutation {
             },
             Move::D => {
                 (Edge::DF, Edge::DR, Edge::DB, Edge::DL)
+            },
+            Move::FPrime => {
+                (Edge::UF, Edge::LF, Edge::DF, Edge::RF)
+            },
+            Move::RPrime => {
+                (Edge::UR, Edge::RF, Edge::DR, Edge::RB)
+            },
+            Move::UPrime => {
+                (Edge::UB, Edge::UL, Edge::UF, Edge::UR)
+            },
+            Move::BPrime => {
+                (Edge::UB, Edge::RB, Edge::DB, Edge::LB)
+            },
+            Move::LPrime => {
+                (Edge::UL, Edge::LB, Edge::DL, Edge::LF)
+            },
+            Move::DPrime => {
+                (Edge::DF, Edge::DL, Edge::DB, Edge::DR)
             },
         };
 
@@ -568,8 +636,17 @@ impl Cube {
                     movelist.push(Move::from(prevch));
                 },
                 '\'' | '`' | '\u{2032}' => {
-                    movelist.push(Move::from(prevch));
-                    movelist.push(Move::from(prevch));
+                    match prevch {
+                        'F' | 'R' | 'U' | 'B' | 'L' | 'D' => {
+                            movelist.pop();
+                            let mut s = prevch.to_string();
+                            s.push('\'');
+                            movelist.push(Move::from(s.as_str()));
+                        },
+                        _ => {
+                            panic!("Invalid character combination: {}{}", prevch, ch);
+                        },
+                    }
                 },
                 _ => {
                     panic!("Unrecognized move: {}", ch);
@@ -612,6 +689,12 @@ impl Cube {
             Move::B => ([0,1,7,2,3,5,6,4], [0,0,1,2,1,0,0,2]),
             Move::L => ([3,1,2,4,5,0,6,7], [2,0,0,1,2,1,0,0]),
             Move::D => ([0,1,2,3,7,4,5,6], [0u8; 8]),
+            Move::FPrime => ([1,6,2,3,4,0,5,7], [1,2,0,0,0,2,1,0]),
+            Move::RPrime => ([0,2,7,3,4,5,1,6], [0,1,2,0,0,0,2,1]),
+            Move::UPrime => ([3,0,1,2,4,5,6,7], [0u8; 8]),
+            Move::BPrime => ([0,1,3,4,7,5,6,2], [0,0,1,2,1,0,0,2]),
+            Move::LPrime => ([5,1,2,0,3,4,6,7], [2,0,0,1,2,1,0,0]),
+            Move::DPrime => ([0,1,2,3,5,6,7,4], [0u8; 8]),
         };
         self.x = swap_x(self.x, &swap_indices);
         self.x = add_x(self.x, &addends);
@@ -623,6 +706,12 @@ impl Cube {
             Move::B => ([5,1,2,3,0,8,6,7,4,9,10,11], [1,0,0,0,1,1,0,0,1,0,0,0]),
             Move::L => ([0,1,2,4,11,5,6,3,8,9,10,7], [0u8; 12]),
             Move::D => ([0,1,2,3,4,5,6,7,9,10,11,8], [0u8; 12]),
+            Move::FPrime => ([0,1,6,3,4,5,10,2,8,9,7,11], [0,0,1,0,0,0,1,1,0,0,1,0]),
+            Move::RPrime => ([0,5,2,3,4,9,1,7,8,6,10,11], [0u8; 12]),
+            Move::UPrime => ([1,2,3,0,4,5,6,7,8,9,10,11], [0u8; 12]),
+            Move::BPrime => ([4,1,2,3,8,0,6,7,5,9,10,11], [1,0,0,0,1,1,0,0,1,0,0,0]),
+            Move::LPrime => ([0,1,2,7,3,5,6,11,8,9,10,4], [0u8; 12]),
+            Move::DPrime => ([0,1,2,3,4,5,6,7,11,8,9,10], [0u8; 12]),
         };
         self.y = swap_y(self.y, &swap_indices);
         self.y = add_y(self.y, &addends);
